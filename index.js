@@ -7,97 +7,137 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-let barang = [
+// Data rumah sementara
+let rumah = [
   {
     id: 1,
-    nama: "Laptop",
-    kategori: "Elektronik",
-    jumlah: 5,
+    name: "Rumah Minimalis",
+    location: "Surakarta",
+    price: 650000000,
+    bedrooms: 3,
+    bathrooms: 2,
+    area: 120,
+    description: "Rumah minimalis dengan desain modern",
   },
   {
     id: 2,
-    nama: "Mouse",
-    kategori: "Aksesoris",
-    jumlah: 10,
+    name: "Rumah Keluarga",
+    location: "Sukoharjo",
+    price: 480000000,
+    bedrooms: 2,
+    bathrooms: 1,
+    area: 90,
+    description: "Rumah nyaman untuk keluarga",
   },
   {
     id: 3,
-    nama: "Keyboard",
-    kategori: "Aksesoris",
-    jumlah: 7,
+    name: "Rumah Modern",
+    location: "Karanganyar",
+    price: 890000000,
+    bedrooms: 4,
+    bathrooms: 3,
+    area: 180,
+    description: "Rumah modern dengan ruangan luas",
   },
 ];
 
+// Halaman utama
 app.get("/", (req, res) => {
-  res.json({ pesan: "API Inventaris berhasil dijalankan" });
+  res.json({
+    pesan: "API RumahKita berhasil dijalankan",
+  });
 });
 
-app.get("/barang", (req, res) => {
-  res.json(barang);
+// Menampilkan semua rumah
+app.get("/rumah", (req, res) => {
+  res.json(rumah);
 });
 
-app.get("/barang/:id", (req, res) => {
-  const data = barang.find((item) => item.id === Number(req.params.id));
+// Menampilkan detail rumah
+app.get("/rumah/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const data = rumah.find((item) => item.id === id);
 
   if (!data) {
-    return res.status(404).json({ pesan: "Barang tidak ditemukan" });
+    return res.status(404).json({
+      pesan: "Rumah tidak ditemukan",
+    });
   }
 
   res.json(data);
 });
 
-app.post("/barang", (req, res) => {
-  const { nama, kategori, jumlah } = req.body;
+// Menambahkan rumah
+app.post("/rumah", (req, res) => {
+  const { name, location, price, bedrooms, bathrooms, area, description } = req.body;
 
-  if (!nama || !kategori || jumlah == null) {
+  if (!name || !location || price == null) {
     return res.status(400).json({
-      pesan: "Nama, kategori, dan jumlah wajib diisi",
+      pesan: "Nama, lokasi, dan harga wajib diisi",
     });
   }
 
   const dataBaru = {
-    id: barang.length ? Math.max(...barang.map((item) => item.id)) + 1 : 1,
-    nama,
-    kategori,
-    jumlah,
+    id: rumah.length ? Math.max(...rumah.map((item) => item.id)) + 1 : 1,
+    name,
+    location,
+    price: Number(price),
+    bedrooms: Number(bedrooms) || 0,
+    bathrooms: Number(bathrooms) || 0,
+    area: Number(area) || 0,
+    description: description || "",
   };
 
-  barang.push(dataBaru);
-  res.status(201).json(dataBaru);
+  rumah.push(dataBaru);
+
+  res.status(201).json({
+    pesan: "Rumah berhasil ditambahkan",
+    data: dataBaru,
+  });
 });
 
-app.put("/barang/:id", (req, res) => {
-  const index = barang.findIndex((item) => item.id === Number(req.params.id));
+// Mengubah data rumah
+app.put("/rumah/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const index = rumah.findIndex((item) => item.id === id);
 
   if (index === -1) {
-    return res.status(404).json({ pesan: "Barang tidak ditemukan" });
+    return res.status(404).json({
+      pesan: "Rumah tidak ditemukan",
+    });
   }
 
-  barang[index] = {
-    id: Number(req.params.id),
-    nama: req.body.nama,
-    kategori: req.body.kategori,
-    jumlah: req.body.jumlah,
+  rumah[index] = {
+    ...rumah[index],
+    ...req.body,
+    id,
   };
-
-  res.json(barang[index]);
-});
-
-app.delete("/barang/:id", (req, res) => {
-  const index = barang.findIndex((item) => item.id === Number(req.params.id));
-
-  if (index === -1) {
-    return res.status(404).json({ pesan: "Barang tidak ditemukan" });
-  }
-
-  const barangDihapus = barang.splice(index, 1);
 
   res.json({
-    pesan: "Barang berhasil dihapus",
-    data: barangDihapus[0],
+    pesan: "Data rumah berhasil diperbarui",
+    data: rumah[index],
+  });
+});
+
+// Menghapus rumah
+app.delete("/rumah/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const index = rumah.findIndex((item) => item.id === id);
+
+  if (index === -1) {
+    return res.status(404).json({
+      pesan: "Rumah tidak ditemukan",
+    });
+  }
+
+  const rumahDihapus = rumah.splice(index, 1);
+
+  res.json({
+    pesan: "Rumah berhasil dihapus",
+    data: rumahDihapus[0],
   });
 });
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`API berjalan pada port ${PORT}`);
+  console.log(`API RumahKita berjalan di port ${PORT}`);
 });
